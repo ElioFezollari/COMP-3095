@@ -17,10 +17,12 @@ FROM openjdk:22-jdk
 
 RUN mkdir /app
 
-COPY --from=builder /home/gradle/src/build/libs/*jar /app/product-service.jar
+COPY --from=builder /home/gradle/src/build/libs/*.jar /app/product-service.jar
 
-ENV MONGO_DB_USERNAME=admin
-    MONGO_DB_PWD =password
+RUN echo "Contents of /app directory:" && ls /app
+
+ENV MONGO_DB_USERNAME=admin \
+    MONGO_DB_PWD=password
 
 EXPOSE 8084
 
