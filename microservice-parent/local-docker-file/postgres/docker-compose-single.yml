@@ -11,7 +11,7 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=password
     volumes:
-      - ./data/order:/var/lib/postgresql/data
+      - ./data/order:/var/Lib/postgresql/data
       - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql
   pgadmin:
     image: dpage/pgadmin4
