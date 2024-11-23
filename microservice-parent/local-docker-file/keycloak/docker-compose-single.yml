@@ -21,14 +21,14 @@ services:
     volumes:
       - ./realms/:/opt/keycloak/data/import
     depends_on:
-      - postgres-keycloak
+      - postgres-keycloak2
     networks:
       - spring
   postgres-keycloak:
     image: postgres
     ports:
       - "5431:5432"
-    container_name: postgres-keycloak
+    container_name: postgres-keycloak2
     environment:
       - POSTGRES_DB=keycloak
       - POSTGRES_USER=admin

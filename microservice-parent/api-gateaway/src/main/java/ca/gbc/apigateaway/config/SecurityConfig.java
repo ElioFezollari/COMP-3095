@@ -24,10 +24,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-
-
        log.info("Initializing Security Filter Chain");
-
        // Disabling CSRF protection and making sure all requests require authentication
        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
 
