@@ -4,6 +4,7 @@ import ca.gbc.orderservice.dto.OrderRequest;
 import ca.gbc.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,8 +15,14 @@ public class OrderController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public String placeOrder(@RequestBody OrderRequest orderRequest){
-        orderService.placeOrder(orderRequest);
-        return "Order placed Successfully";
+    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest orderRequest){
+        try {
+            orderService.placeOrder(orderRequest);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("Order placed successfully");
+        } catch (RuntimeException exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Product with skuCode is not in stock");
+        }
     }
 }

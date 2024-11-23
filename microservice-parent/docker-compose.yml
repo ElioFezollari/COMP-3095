@@ -1,21 +1,157 @@
-#
+#----------------------------------------------------------
 # 1. docker-compose -p microservice-comp3095-ecommerce -f docker-compose.yml up -d
-#  - This command will start the containers in detached mode without rebuilding the images ( if they exist )
-#
+#  - This command will start containers in detached mode without rebuilding the images (if they exist)
 # 2. docker-compose -p microservice-comp3095-ecommerce -f docker-compose.yml up -d --build
-#  - This command forces the rebuild of images, even if they already exist, before starting the containers
-#-----------------------------------------------------------------------------------------------------------------------
+#  - This command forces the rebuild of images, even if they already exist, before starting the containers.
+#----------------------------------------------------------
+
 version: '3.9'
 
-
 services:
+
+  api-gateway:
+    image: api-gateway
+    ports:
+      - "9000:9000"
+    build:
+      context: ./api-gateway
+      dockerfile: ./Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_APPLICATION_JSON={"loggin":{"level":{"root":"INFO", "ca.gbc.apigateway":"DEBUG"}}}:
+    container_name: api-gateway
+    networks:
+      - spring
+
+  keycloak:
+    container_name: keycloak
+    hostname: keycloak
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres-keycloak
+      DB_DATABASE: keycloak
+      DB_USER: admin
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      ROOT_LOGLEVEL: DEBUG
+      JBOSS_LOG_MANAGER_ROOT_LOGGER: DEBUG, stdout, FILE
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./local-docker-file/keycloak/realms/:/opt/keycloak/data/import
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - spring
+
+  postgres-keycloak:
+    image: postgres
+    ports:
+      - "5431:5432"
+    container_name: postgres-keycloak
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/data/postgres
+    volumes:
+      - ./data/postgres/keycloak:/var/lib/postgresql/data
+    networks:
+      - spring
+
+  inventory-service:
+    image: inventory-service
+    ports:
+      - "9093:9093"
+    build:
+      context: ./inventory-service # The directory where the dockerfile resides
+      dockerfile: ./Dockerfile # Specify the dockerfile for use to build image
+    container_name: inventory-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5434/inventory-service
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - postgres-inventory
+    networks:
+      - spring
+
+  postgres-inventory:
+    image: postgres
+    ports:
+      - "5434:5432"
+    container_name: postgres-inventory
+    environment:
+      - POSTGRES_DB=inventory-service
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/data/postgres
+    volumes:
+      - ./data/inventory:/var/Lib/postgresql/data
+    #      - ./init/inventory/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - spring
+
+  order-service:
+    image: order-service
+    ports:
+      - "9092:9092"
+    build:
+      context: ./order-service # The directory where the dockerfile resides
+      dockerfile: ./Dockerfile # Specify the dockerfile for use to build image
+    container_name: order-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5433/order-service
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - postgres-order
+    networks:
+      - spring
+
+  postgres-order:
+    image: postgres
+    ports:
+      - "5433:5432"
+    container_name: postgres-order
+    environment:
+      - POSTGRES_DB=order-service
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/data/postgres
+    volumes:
+      - ./data/order:/var/Lib/postgresql/data
+    #      - ./init/order/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - spring
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8888:80"
+    container_name: pgadmin-order
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.ca
+      - PGADMIN_DEFAULT_PASSWORD=password
+    depends_on:
+      - postgres-order
+    networks:
+      - spring
+
   product-service:
     image: product-service
     ports:
-      - "8084:8084"
+      - "8087:8087"
     build:
-      context: ./product-service # WHERE DOCKERFILE IS LOCATED
-      dockerfile: ./Dockerfile   #SPECIFY THE DOCKERFILE TO USE FOR BUILDING THE IMAGE
+      context: ./product-service # The directory where the dockerfile resides
+      dockerfile: ./Dockerfile # Specify the dockerfile for use to build image
     container_name: product-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -23,21 +159,23 @@ services:
       - mongodb
     networks:
       - spring
+
   mongodb:
+    container_name: mongodb
     image: mongo:latest
     ports:
-      - "27017:27017"
-    container_name: mongodb
+      - "27020:27017"
     environment:
-        - MONGO_INITDB_ROOT_USERNAME=admin
-        - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
-      - mongo-db:/data/db
+      - ./data/mongo/products:/data/db
       - ./init/mongo/docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    #command: mongod -auth
-    #restart: unless stopped
+    #    restart: unless-stopped
+    #    command: mongo -auth
     networks:
       - spring
+
   mongo-express:
     image: mongo-express
     ports:
@@ -46,7 +184,7 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
       - ME_CONFIG_MONGODB_SERVER=mongodb
-    container_name: mongo-express-ps
+    container_name: mongo-express-product
     depends_on:
       - mongodb
     networks:
