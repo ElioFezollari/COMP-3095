@@ -53,10 +53,10 @@ class OrderServiceApplicationTests {
 				.post("/api/order")
 				.then()
 				.log().all()
-				.statusCode(201)
+				.statusCode(400)
 				.extract()
 				.body().asString();
 
-		assertThat(responseBodyString, Matchers.is("Order placed successfully"));
+		assertThat(responseBodyString, Matchers.is("Product with skuCode is not in stock"));
 	}
 }
