@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  # Zookeeper - service to coordinate and manage Kafka brokers (clusters)
+  zookeeper:
+    container_name: zookeeper
+    hostname: zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - spring
+
+  # Kafka broker - service for handling messaging and streaming data between microservices
+  broker:
+    container_name: broker
+    image: confluentinc/cp-kafka:7.5.0
+    ports:
+      - "9099:9099"  # Mapping Kafka broker to port 9099
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9099,PLAINTEXT_HOST://host.docker.internal:9099  # Mapped to 9099
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - spring
+  # Kafka UI - service for monitoring Kafka topics
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8086:8080"
+    environment:
+      KAFKA_CLUSTER_NAME: local
+      KAFKA_CLUSTER_BOOTSTRAPSERVERS: broker:29092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    depends_on:
+      - broker
+    networks:
+      - spring
+networks:
+  spring:
+    driver: bridge

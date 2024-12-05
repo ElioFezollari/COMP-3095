@@ -32,8 +32,10 @@ dependencyManagement{
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.2.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.kafka:spring-kafka:3.3.0")
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 	implementation("org.flywaydb:flyway-database-postgresql")
@@ -45,6 +47,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
+	testImplementation("org.springframework.kafka:spring-kafka-test:3.3.0")
+	testImplementation("org.testcontainers:kafka:1.20.4")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 	testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
