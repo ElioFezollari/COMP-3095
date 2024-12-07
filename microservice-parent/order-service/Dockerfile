@@ -7,5 +7,5 @@ RUN mkdir /app
 COPY --from=builder /home/gradle/src/build/libs/*.jar /app/order-service.jar
 ENV POSTGRES_USER=admin \
     POSTGRES_PWD=password
-EXPOSE 9092
+EXPOSE 9094
 ENTRYPOINT ["java", "-jar", "/app/order-service.jar"]

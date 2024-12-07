@@ -22,7 +22,7 @@ public class OrderController {
                     .body("Order placed successfully");
         } catch (RuntimeException exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Product with skuCode is not in stock");
+                    .body("Error placing order: " + exception.getMessage());
         }
     }
 }

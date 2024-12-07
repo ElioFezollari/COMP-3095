@@ -100,7 +100,7 @@ services:
   order-service:
     image: order-service
     ports:
-      - "9092:9092"
+      - "9094:9094"
     build:
       context: ./order-service # The directory where the dockerfile resides
       dockerfile: ./Dockerfile # Specify the dockerfile for use to build image
