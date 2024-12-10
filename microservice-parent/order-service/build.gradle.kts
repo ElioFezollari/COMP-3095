@@ -21,6 +21,9 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven{
+		url = uri("https://packages.confluent.io/maven/")
+	}
 }
 
 // Week 10
@@ -39,8 +42,15 @@ dependencies {
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 	implementation("org.flywaydb:flyway-database-postgresql")
+
+	implementation("io.confluent:kafka-schema-registry-client:7.7.1")
+	implementation("io.confluent:kafka-avro-serializer:7.7.1")
+	implementation("org.apache.avro:avro:1.12.0")
+
+	implementation(project(":shared-schema"))
+
 	compileOnly("org.projectlombok:lombok")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	//developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

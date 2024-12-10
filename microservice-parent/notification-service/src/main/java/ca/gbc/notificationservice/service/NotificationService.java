@@ -1,5 +1,6 @@
 package ca.gbc.notificationservice.service;
-import ca.gbc.notificationservice.event.OrderPlacedEvent;
+
+import ca.gbc.orderservice.event.OrderPlacedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -26,14 +27,17 @@ public class NotificationService {
             messageHelper.setTo(orderPlacedEvent.getEmail());
             messageHelper.setSubject(String.format("Your order (%s) was placed successfully",orderPlacedEvent.getOrderNumber()));
             messageHelper.setText(String.format("""
-                    Good Day
+                    Good Day %s %s
                     
                     Your order with order number %s was successfully placed.
                     
                     Thank you for your business
                     
                     COMP3095 Staff
-                    """,orderPlacedEvent.getOrderNumber()));
+                    """,
+                    orderPlacedEvent.getFirstName(),
+                    orderPlacedEvent.getLastName(),
+                    orderPlacedEvent.getOrderNumber()));
         };
         try{
             javaMailSender.send(messagePreparator);

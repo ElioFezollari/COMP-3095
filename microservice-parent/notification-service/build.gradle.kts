@@ -21,6 +21,9 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven{
+        url = uri("https://packages.confluent.io/maven/")
+    }
 }
 
 dependencies {
@@ -29,7 +32,13 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     compileOnly("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    implementation("io.confluent:kafka-schema-registry-client:7.7.1")
+    implementation("io.confluent:kafka-avro-serializer:7.7.1")
+    implementation("org.apache.avro:avro:1.12.0")
+
+    implementation(project(":shared-schema"))
+
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")

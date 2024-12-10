@@ -38,13 +38,27 @@ services:
       - "8086:8080"
     environment:
       KAFKA_CLUSTER_NAME: local
-      KAFKA_CLUSTER_BOOTSTRAPSERVERS: broker:29092
+      KAFKA_CLUSTERS_BOOTSTRAPSERVERS: broker:29092
+      KAFKA_CLUSTERS_SCHEMAREGISTRY: http://schema-registry:8088
       DYNAMIC_CONFIG_ENABLED: 'true'
     depends_on:
       - broker
     networks:
       - spring
-
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    hostname: schema-registry
+    container_name: schema-registry
+    ports:
+      - "8088:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker:29092"
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    depends_on:
+      - broker
+    networks:
+      - spring
 networks:
   spring:
     driver: bridge

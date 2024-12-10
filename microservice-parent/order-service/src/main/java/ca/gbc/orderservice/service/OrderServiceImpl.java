@@ -39,11 +39,15 @@ public class OrderServiceImpl implements OrderService{
         orderRepository.save(order);
 
         // Send message to kafka on order-paced topic
-            OrderPlacedEvent orderPlacedEvent =
-                    new OrderPlacedEvent(order.getOrderNumber(),orderRequest.userDetails().email());
+            OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent();
+            orderPlacedEvent.setOrderNumber(order.getOrderNumber());
+            orderPlacedEvent.setEmail(orderRequest.userDetails().email());
+            orderPlacedEvent.setFirstName(orderRequest.userDetails().firstName());
+            orderPlacedEvent.setLastName(orderRequest.userDetails().lastName());
             log.info("Start + Sending OrderPlacedEvent {} to Kafka topic order--placed",orderPlacedEvent);
             kafkaTemplate.send("order-placed",orderPlacedEvent);
             log.info("Complete - Sent OrderPlacedEvent {} to Kafka topic order--placed",orderPlacedEvent );
+            log.info("Schema: {}",orderPlacedEvent.getSchema());
         }
         else{
             throw new RuntimeException("Product with skuCode " + orderRequest.skuCode() + " is not in stock");
